@@ -77,9 +77,9 @@ namespace MangaFetch
             bool switchServer = false;
             string folder = "";
             //true -and 
+            string fileName = "0";
             while (retry>0)
             {
-                string fileName="0";
                 bool taskResult = false;
                 Thread.Sleep(2);
                 if (switchServer)
@@ -214,7 +214,10 @@ namespace MangaFetch
                             }
                             else
                             {
-                                index = index + 1;
+                                if (!skip)
+                                {
+                                    index = index + 1;
+                                }  
                             }
                             break;
 

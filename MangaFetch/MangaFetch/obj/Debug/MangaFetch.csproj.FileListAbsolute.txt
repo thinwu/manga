@@ -13,3 +13,10 @@ D:\capture\MangaFetch\MangaFetch\obj\Debug\MangaFetch.exe
 D:\capture\MangaFetch\MangaFetch\obj\Debug\MangaFetch.pdb
 D:\capture\MangaFetch\MangaFetch\bin\Debug\MangaFetch.exe
 D:\capture\MangaFetch\MangaFetch\bin\Debug\MangaFetch.pdb
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\bin\Debug\MangaFetch.exe.config
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\obj\Debug\Interop.SHDocVw.dll
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\obj\Debug\MangaFetch.csproj.ResolveComReference.cache
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\obj\Debug\MangaFetch.exe
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\obj\Debug\MangaFetch.pdb
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\bin\Debug\MangaFetch.exe
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\bin\Debug\MangaFetch.pdb
