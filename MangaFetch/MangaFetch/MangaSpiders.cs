@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace MangaFetch
 {
@@ -14,6 +16,28 @@ namespace MangaFetch
     {
         [DllImport("user32.dll")]
         public static extern int SetForegroundWindow(IntPtr hWnd);
+        public static void SaveProcess(object StartFrom, string savedataFullName)
+        {
+            using (Stream ms = File.OpenWrite(savedataFullName))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(ms, StartFrom);
+            }
+        }
+        public static object ReadProcess(string savedataFullName)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            object obj = null;
+            if (File.Exists(savedataFullName))
+            {
+                using (FileStream fs = File.Open(savedataFullName, FileMode.Open))
+                {
+                    obj = formatter.Deserialize(fs);
+                }
+            }            
+            return obj;
+                
+        }
         public static void Log(string logMessage, TextWriter w)
         {
             w.Write("\r\nLog Entry : ");
@@ -56,14 +80,15 @@ namespace MangaFetch
     abstract class MangaSpiders
     {
         static int generalSleep = 200;
-        public static void XXMH(string URL, string subFolder, ref float vol)
+        static bool visable = false;
+        public static void XXMHSubVolumn(string URL, string subFolder, ref float vol)
         {
             var IE = new SHDocVw.InternetExplorer();
-            IE.Visible = true;
+            IE.Visible = visable; //testing false;
             IE.Navigate2(URL);
             string pwd = Directory.GetCurrentDirectory();
 
-            string logFile = Path.Combine(pwd, "MangaSpider.log");
+            string logFile = Path.Combine(pwd, String.Format("MangaSpider.{0}.log", subFolder));
             string[] tabServer = { "tab_srv1", "tab_srv2", "tab_srv3", "tab_srv4", "tab_srv5" };
             
             while (IE.ReadyState != SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE)
@@ -188,23 +213,28 @@ namespace MangaFetch
             }
             Utilities.CloseIE(subFolder);
         }
-        public static void XXMHV2(string URL, int StartPage = 1)
+        public static void XXMHV2(string URL)
         {
             var IE = new SHDocVw.InternetExplorer();
-            IE.Visible = true;
+            IE.Visible = visable;
             IE.Navigate2(URL);
-
             string pwd = Directory.GetCurrentDirectory();
-            string logFile = Path.Combine(pwd, "MangaSpider.log");
-            
-
             while (IE.ReadyState != SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE)
             {
                 Thread.Sleep(generalSleep);
             }
             string subFolder = IE.Document.IHTMLDocument2_nameProp.ToString();
             subFolder = subFolder.Split(' ')[0];
+            string savedataName = Path.Combine(pwd, String.Format("MangaSpider.{0}.dat", subFolder));
+            object StartFrom = Utilities.ReadProcess(savedataName);
+            if (StartFrom == null)
+            {
+                Dictionary<string, int> newManga = new Dictionary<string, int>();
+                newManga["StartPage"] = 1;
+                StartFrom = (object)newManga;
+            }
             var TitleLi = IE.Document.getElementById("coclist1").getElementsByTagName("li");
+            int StartPage = ((Dictionary<string, int>)StartFrom)["StartPage"];
             int fatchSize = TitleLi.Length - StartPage + 1;
             string[] VolURLs = new string[fatchSize];
             int j = 0;
@@ -213,14 +243,13 @@ namespace MangaFetch
                 VolURLs[j] = TitleLi[i].getElementsByTagName("a")[0].IHTMLAnchorElement_href;
                 j++;
             }
-            //TitleLi[0].getElementsByTagName("a")[0]
-            //		IHTMLAnchorElement_href
-
             float vol = 0.0f;
             Utilities.CloseIE(subFolder);
-            foreach(string url in VolURLs)
+            for (int i = 0; i< VolURLs.Length; i++)
             {
-                XXMH(url, subFolder, ref vol);
+                ((Dictionary<string, int>)StartFrom)["StartPage"] = StartPage + i;
+                Utilities.SaveProcess(StartFrom, savedataName);
+                XXMHSubVolumn(VolURLs[i], subFolder, ref vol);
             }
         }
         public static void KUKUKKK(dynamic IE, string subFolder)
