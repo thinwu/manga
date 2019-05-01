@@ -16,6 +16,7 @@ namespace MangaFetch
     {
         [DllImport("user32.dll")]
         public static extern int SetForegroundWindow(IntPtr hWnd);
+        private static WebClient webClient = null;
         public static void SaveProcess(object StartFrom, string savedataFullName)
         {
             using (Stream ms = File.OpenWrite(savedataFullName))
@@ -118,6 +119,28 @@ namespace MangaFetch
             }
             return page;
         }
+        public static string GetProperFolderName(string folderName)
+        {
+            return folderName.Replace(':', '：')
+                .Replace('?', '？')
+                .Replace('*', '×')
+                .Replace('<', '《')
+                .Replace('>', '》')
+                .Replace('|', '-')
+                .Replace('"', '“')
+                .Replace('\\', '、')
+                .Replace('/', '、');
+        }
+        public static WebClient GetWebClient()
+        {
+            if (webClient == null) {
+                webClient = new WebClient();
+                webClient.Proxy = null;
+                webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko");
+                webClient.Headers.Add("X-UA-Compatible", "IE=11");
+            }
+            return webClient;
+        }
     }
     abstract class MangaSpiders
     {
@@ -143,7 +166,7 @@ namespace MangaFetch
             string folder = "";
             //true -and 
             string fileName = "0";
-            folder = String.Format(@"{0}\{1}", mangaFolder, currentTitle).Replace('?', '!');
+            folder = String.Format(@"{0}\{1}", mangaFolder, Utilities.GetProperFolderName(currentTitle));
             Directory.CreateDirectory(folder);
             bool skip = false;
             for (int index = 1; index<= totalPages; index++)
@@ -219,8 +242,8 @@ namespace MangaFetch
             string pwd = Directory.GetCurrentDirectory();
             Utilities.WaitForReady(IE);
             string subFolder = IE.Document.IHTMLDocument2_nameProp.ToString();
-            subFolder = subFolder.Split(' ')[0];
-            string savedataName = Path.Combine(pwd, String.Format("MangaSpider.{0}.dat", subFolder));
+            subFolder = Utilities.GetProperFolderName(subFolder.Split(' ')[0]);
+            string savedataName = Path.Combine(pwd, String.Format("XXMH.MangaSpider.{0}.dat", subFolder));
             object StartFrom = Utilities.ReadProcess(savedataName);
             if (StartFrom == null)
             {
@@ -240,10 +263,7 @@ namespace MangaFetch
                 j++;
             }
             float vol = 0.0f;
-            WebClient webClient = new WebClient();
-            webClient.Proxy = null;
-            webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko");
-            webClient.Headers.Add("X-UA-Compatible", "IE=11");
+            WebClient webClient = Utilities.GetWebClient();
             for (int i = 0; i< VolURLs.Length; i++)
             {
                 IE.Navigate2(VolURLs[i]);
@@ -275,6 +295,7 @@ namespace MangaFetch
             }
             string host = Hosts[0];
             string subFolder = TitleLi[0].getElementsByTagName("a")[0].innerText.Split(' ')[0];
+            subFolder = Utilities.GetProperFolderName(subFolder);
             string savedataName = Path.Combine(pwd, String.Format("{1}.MangaSpider.{0}.dat", subFolder, host));
             object StartFrom = Utilities.ReadProcess(savedataName);
             if (StartFrom == null)
@@ -294,10 +315,7 @@ namespace MangaFetch
                 j++;
             }
             float vol = 0.0f;
-            WebClient webClient = new WebClient();
-            webClient.Proxy = null;
-            webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko");
-            webClient.Headers.Add("X-UA-Compatible", "IE=11");
+            WebClient webClient = Utilities.GetWebClient();
             for (int i = 0; i < VolURLs.Length; i++)
             {
                 IE.Navigate2(String.Format("{0}{1}", Hosts[0], VolURLs[i]));
@@ -340,7 +358,7 @@ namespace MangaFetch
                 string folder = "";
                 //true -and 
                 string fileName = "0";
-                folder = String.Format(@"{0}\{1}", mangaFolder, currentTitle).Replace('?', '!');
+                folder = String.Format(@"{0}\{1}", mangaFolder, Utilities.GetProperFolderName(currentTitle));
                 string page = Utilities.GetCalPage(index);
                 fileName = String.Format(folder + @"\{0}.jpg", result.ToString() + "_" + page.ToString());
                 Directory.CreateDirectory(folder);
