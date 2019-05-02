@@ -1,10 +1,10 @@
-﻿using System;
+﻿#define DEBUG
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Collections.Generic;
@@ -16,6 +16,7 @@ namespace MangaFetch
     {
         [DllImport("user32.dll")]
         public static extern int SetForegroundWindow(IntPtr hWnd);
+        private static WebClient webClient = null;
         public static void SaveProcess(object StartFrom, string savedataFullName)
         {
             using (Stream ms = File.OpenWrite(savedataFullName))
@@ -34,9 +35,9 @@ namespace MangaFetch
                 {
                     obj = formatter.Deserialize(fs);
                 }
-            }            
+            }
             return obj;
-                
+
         }
         public static void Log(string logMessage, TextWriter w)
         {
@@ -60,8 +61,9 @@ namespace MangaFetch
                 else if (title.Contains(titleLike))
                 {
                     proc.CloseMainWindow();
+                    proc.Dispose();
                 }
-                
+
             }
         }
         public static void MainWindowPressEnter()
@@ -76,36 +78,15 @@ namespace MangaFetch
 
             }
         }
-    }
-    abstract class MangaSpiders
-    {
-        static int generalSleep = 200;
-        static bool visable = false;
-        public static void XXMHSubVolumn(string URL, string subFolder, ref float vol)
+        public static void WaitForReady(dynamic IE, int generalSleep = 200)
         {
-            var IE = new SHDocVw.InternetExplorer();
-            IE.Visible = visable; //testing false;
-            IE.Navigate2(URL);
-            string pwd = Directory.GetCurrentDirectory();
-
-            string logFile = Path.Combine(pwd, String.Format("MangaSpider.{0}.log", subFolder));
-            string[] tabServer = { "tab_srv1", "tab_srv2", "tab_srv3", "tab_srv4", "tab_srv5" };
-            
-            while (IE.ReadyState != SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE)
+            while (IE.ReadyState != Convert.ToInt16(SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE))
             {
                 Thread.Sleep(generalSleep);
             }
-            string mangaFolder = Path.Combine(pwd, subFolder);
-            int serverIndex = 0;
-            IE.Document.getElementById(tabServer[serverIndex]).click();
-            while (IE.ReadyState != SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE)
-            {
-                Thread.Sleep(generalSleep);
-            }
-            int totalPages = IE.Document.getElementsByClassName("selectTT")[0].getElementsByTagName("option").Length;
-            string currentTitle = IE.Document.IHTMLDocument2_nameProp;
-            string src = "";
-            WebClient webClient = new WebClient();
+        }
+        public static void CalVolResult(string currentTitle, ref float vol, ref string result)
+        {
             try
             {
                 float newVol = float.Parse(Regex.Match(currentTitle, @"\d+").Value);
@@ -115,7 +96,7 @@ namespace MangaFetch
             {
                 vol += 0.1f;
             }
-            string result = (vol / 1000).ToString().Replace(".", "");
+            result = (vol / 1000).ToString().Replace(".", "");
             if (result.Length == 4)
             {
                 result = result + "0";
@@ -128,31 +109,84 @@ namespace MangaFetch
             {
                 result = result + "000";
             }
+        }
+        public static string GetCalPage(int index)
+        {
+            string page = ((index / 100.00).ToString()).Replace(".", "");
+            if (page.Length == 2)
+            {
+                page = page + "0";
+            }
+            return page;
+        }
+        public static string GetProperFolderName(string folderName)
+        {
+            return folderName.Replace(':', '：')
+                .Replace('?', '？')
+                .Replace('*', '×')
+                .Replace('<', '《')
+                .Replace('>', '》')
+                .Replace('|', '-')
+                .Replace('"', '“')
+                .Replace("\\", "")
+                .Replace("/", "");
+        }
+        public static string TrimURL(string URL)
+        {
+            Uri uri = new Uri(URL);
+            return Utilities.GetProperFolderName(uri.AbsolutePath);
+        }
+        public static WebClient GetWebClient()
+        {
+            if (webClient == null)
+            {
+                webClient = new WebClient();
+                webClient.Proxy = null;
+                webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko");
+                webClient.Headers.Add("X-UA-Compatible", "IE=11");
+            }
+            return webClient;
+        }
+        public static string GetSaveDataFullPath(string workingDir, string MangaName, string URL)
+        {
+            return Path.Combine(workingDir, String.Format("{1}.MangaSpider.{0}.dat", MangaName, Utilities.TrimURL(URL)));
+        }
+    }
+    abstract class MangaSpiders
+    {
+        static bool Visable = false;
+        static string WorkingDir = Directory.GetCurrentDirectory();
+        private static void XXMHSubVolumn(dynamic IE, string subFolder, ref float vol, WebClient webClient)
+        {
+            string logFile = Path.Combine(WorkingDir, String.Format("MangaSpider.{0}.log", subFolder));
+            string[] tabServer = { "tab_srv1", "tab_srv2", "tab_srv3", "tab_srv4", "tab_srv5" };
+
+            Utilities.WaitForReady(IE);
+            string mangaFolder = Path.Combine(WorkingDir, subFolder);
+            int serverIndex = 0;
+            IE.Document.getElementById(tabServer[serverIndex]).click();
+            Utilities.WaitForReady(IE);
+            int totalPages = IE.Document.getElementsByClassName("selectTT")[0].getElementsByTagName("option").Length;
+            string currentTitle = IE.Document.IHTMLDocument2_nameProp;
+            string src = "";
+            string result = "";
+            Utilities.CalVolResult(currentTitle, ref vol, ref result);
             bool switchServer = false;
             string folder = "";
             //true -and 
             string fileName = "0";
-            folder = String.Format(@"{0}\{1}", mangaFolder, currentTitle).Replace('?', '!');
-            System.IO.Directory.CreateDirectory(folder);
+            folder = String.Format(@"{0}\{1}", mangaFolder, Utilities.GetProperFolderName(currentTitle));
+            Directory.CreateDirectory(folder);
             bool skip = false;
-            for (int index = 1; index<= totalPages; index++)
+            for (int index = 1; index <= totalPages; index++)
             {
-                string page = ((index / 100.00).ToString()).Replace(".", "");
-                if (page.Length == 2)
-                {
-                    page = page + "0";
-                }
+                string page = Utilities.GetCalPage(index);
                 serverIndex = 0;
                 fileName = page;
-                fileName = String.Format(folder + @"\{0}.jpg", result.ToString() + "_" + page.ToString());
-                webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko");
-                webClient.Headers.Add("X-UA-Compatible", "IE=11");
+                fileName = String.Format(folder + @"\{0}.jpg", result.ToString() + "_" + page);
                 while (true)
                 {
-                    while (IE.ReadyState != SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE)
-                    {
-                        Thread.Sleep(generalSleep);
-                    }
+                    Utilities.WaitForReady(IE);
                     var element = IE.Document.getElementById("dracga");
                     src = element.src;
                     string logLine = src + " as " + fileName;
@@ -162,10 +196,7 @@ namespace MangaFetch
                         if (serverIndex < tabServer.Length)
                         {
                             IE.Document.getElementById(tabServer[serverIndex]).click();
-                            while (IE.ReadyState != SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE)
-                            {
-                                Thread.Sleep(generalSleep);
-                            }
+                            Utilities.WaitForReady(IE);
                             element = IE.Document.getElementById("dracga");
                             src = element.src;
                             switchServer = false;
@@ -191,7 +222,7 @@ namespace MangaFetch
                         else
                         {
                             logLine = "skipped: " + src + " as " + fileName;
-                            Console.Out.WriteLine("skipped: " + src + " as " + fileName);
+                            Console.Out.WriteLine(logLine);
                             using (StreamWriter w = File.AppendText(logFile + ".skppedList"))
                             {
                                 Utilities.Log(logLine, w);
@@ -211,49 +242,171 @@ namespace MangaFetch
                     }
                 }
             }
-            Utilities.CloseIE(subFolder);
         }
-        public static void XXMHV2(string URL)
+        public static void XXMHV2(string URL, Dictionary<string, object> savedata)
         {
             var IE = new SHDocVw.InternetExplorer();
-            IE.Visible = visable;
+            IE.Visible = Visable;
             IE.Navigate2(URL);
-            string pwd = Directory.GetCurrentDirectory();
-            while (IE.ReadyState != SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE)
-            {
-                Thread.Sleep(generalSleep);
-            }
+            Utilities.WaitForReady(IE);
             string subFolder = IE.Document.IHTMLDocument2_nameProp.ToString();
-            subFolder = subFolder.Split(' ')[0];
-            string savedataName = Path.Combine(pwd, String.Format("MangaSpider.{0}.dat", subFolder));
-            object StartFrom = Utilities.ReadProcess(savedataName);
-            if (StartFrom == null)
+            subFolder = Utilities.GetProperFolderName(subFolder.Split(' ')[0]);
+            string savedataName = Utilities.GetSaveDataFullPath(WorkingDir, subFolder,URL);
+            if (savedata == null)
             {
-                Dictionary<string, int> newManga = new Dictionary<string, int>();
-                newManga["StartPage"] = 1;
-                StartFrom = (object)newManga;
+                savedata = (Dictionary<string, object>)Utilities.ReadProcess(savedataName);
+                if (savedata == null)
+                {
+                    savedata = new Dictionary<string, object>();
+                    savedata["StartPage"] = 1;
+                }
             }
             var TitleLi = IE.Document.getElementById("coclist1").getElementsByTagName("li");
-            int StartPage = ((Dictionary<string, int>)StartFrom)["StartPage"];
+            ((Dictionary<string, object>)savedata)["URL"] = URL;
+            int StartPage = int.Parse(((Dictionary<string, object>)savedata)["StartPage"].ToString());
             int fatchSize = TitleLi.Length - StartPage + 1;
             string[] VolURLs = new string[fatchSize];
             int j = 0;
-            for (int i = fatchSize-1; i >= 0; i--)
+            for (int i = fatchSize - 1; i >= 0; i--)
             {
                 VolURLs[j] = TitleLi[i].getElementsByTagName("a")[0].IHTMLAnchorElement_href;
                 j++;
             }
             float vol = 0.0f;
-            Utilities.CloseIE(subFolder);
-            for (int i = 0; i< VolURLs.Length; i++)
+            WebClient webClient = Utilities.GetWebClient();
+            for (int i = 0; i < VolURLs.Length; i++)
             {
-                ((Dictionary<string, int>)StartFrom)["StartPage"] = StartPage + i;
-                Utilities.SaveProcess(StartFrom, savedataName);
-                XXMHSubVolumn(VolURLs[i], subFolder, ref vol);
+                IE.Navigate2(VolURLs[i]);
+                savedata["StartPage"] = StartPage + i;
+                Utilities.SaveProcess(savedata, savedataName);
+                XXMHSubVolumn(IE, subFolder, ref vol, webClient);
             }
+            webClient.Dispose();
+            IE.Quit();
+            Utilities.CloseIE(subFolder);
         }
-        public static void KUKUKKK(dynamic IE, string subFolder)
+
+        public static void KUKUKKK(string URL, Dictionary<string, object> savedata)
         {
+            var IE = new SHDocVw.InternetExplorer();
+            IE.Visible = Visable;
+            IE.Navigate2(URL);
+            Utilities.WaitForReady(IE);
+            var TitleLi = IE.Document.getElementById("comiclistn").getElementsByTagName("dd");
+            List<String> Hosts = new List<String>();
+            foreach (var href in TitleLi[0].getElementsByTagName("a"))
+            {
+                string h = href.host;
+                if (!Hosts.Contains(h))
+                {
+                    Hosts.Add(h);
+                }
+            }
+            string host = Hosts[0];
+            string subFolder = Utilities.GetProperFolderName(TitleLi[0].getElementsByTagName("a")[0].innerText.Split(' ')[0]);
+            string savedataName = Utilities.GetSaveDataFullPath(WorkingDir, subFolder, URL);
+            if (savedata == null)
+            {
+                savedata = (Dictionary<string, object>)Utilities.ReadProcess(savedataName);
+                if (savedata == null)
+                {
+                    savedata = new Dictionary<string, object>();
+                    savedata["StartPage"] = 1;
+                }
+            }
+            savedata["URL"] = URL;
+            int StartPage = int.Parse(savedata["StartPage"].ToString());
+            int fatchSize = TitleLi.Length - StartPage + 1;
+            string[] VolURLs = new string[fatchSize];
+            for (int i = 0; i < fatchSize; i++)
+            {
+                VolURLs[i] = TitleLi[StartPage + i - 1].getElementsByTagName("a")[0].pathname;
+            }
+            float vol = 0.0f;
+            WebClient webClient = Utilities.GetWebClient();
+            for (int i = 0; i < VolURLs.Length; i++)
+            {
+                IE.Navigate2(String.Format("{0}{1}", Hosts[0], VolURLs[i]));
+                savedata["StartPage"] = StartPage + i;
+                Utilities.SaveProcess(savedata, savedataName);
+                KUKUSubVolumn(IE, subFolder, ref vol, webClient, Hosts);
+            }
+            webClient.Dispose();
+            IE.Quit();
+            Utilities.CloseIE(subFolder);
+        }
+        private static void KUKUSubVolumn(dynamic IE, string subFolder, ref float vol, WebClient webClient, List<String> Hosts)
+        {
+            string mangaFolder = Path.Combine(WorkingDir, subFolder);
+            string logFile = Path.Combine(WorkingDir, String.Format("MangaSpider.{0}.log", subFolder));
+            Utilities.WaitForReady(IE);
+            string currentTitle = IE.Document.IHTMLDocument2_nameProp;
+            string result = "";
+            Utilities.CalVolResult(currentTitle, ref vol, ref result);
+            int index = 1;
+            string nextPage = "";
+            while (!nextPage.Contains("exit"))
+            {
+                var table = IE.Document.getElementsByTagName("table")[1];
+                var imgCell = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr")[0].getElementsByTagName("td")[0];
+                nextPage = imgCell.getElementsByTagName("a")[0].pathname;
+                string currentPage = IE.LocationURL;
+                string currentPathName = "";
+                string src = imgCell.getElementsByTagName("a")[0].getElementsByTagName("img")[0].src;
+                foreach (string h in Hosts)
+                {
+                    if (currentPage.Contains(h))
+                    {
+                        currentPathName = currentPage.Replace(h, "");
+                        break;
+                    }
+
+                }
+                string folder = "";
+                string fileName = "0";
+                folder = String.Format(@"{0}\{1}", mangaFolder, Utilities.GetProperFolderName(currentTitle));
+                string page = Utilities.GetCalPage(index);
+                fileName = String.Format(folder + @"\{0}.jpg", result.ToString() + "_" + page.ToString());
+                Directory.CreateDirectory(folder);
+                bool skip = false;
+                foreach (string h in Hosts)
+                {
+                    try
+                    {
+                        string logLine = src + " as " + fileName;
+                        webClient.DownloadFile(src, fileName);
+                        Console.Out.WriteLine(logLine);
+                        using (StreamWriter w = File.AppendText(logFile))
+                        {
+                            Utilities.Log(logLine, w);
+                        }
+                        skip = false;
+                        break;
+                    }
+                    catch
+                    {
+                        IE.Navigate2(String.Format("{0}{1}", h, currentPathName));
+                        Utilities.WaitForReady(IE);
+                        table = IE.Document.getElementsByTagName("table")[1];
+                        imgCell = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr")[0].getElementsByTagName("td")[0];
+                        src = imgCell.getElementsByTagName("a")[0].getElementsByTagName("img")[0].src;
+                        skip = true;
+                        continue;
+                    }
+                }
+                if (skip)
+                {
+                    string logLine = "skipped: " + src + " as " + fileName;
+                    Console.Out.WriteLine(logLine);
+                    using (StreamWriter w = File.AppendText(logFile + ".skppedList"))
+                    {
+                        Utilities.Log(logLine, w);
+                    }
+                }
+                IE.Navigate2(String.Format("{0}{1}", Hosts[0], nextPage));
+                Utilities.WaitForReady(IE);
+                index++;
+            }
 
         }
     }

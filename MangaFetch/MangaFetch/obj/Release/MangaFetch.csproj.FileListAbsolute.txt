@@ -12,3 +12,4 @@ D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\obj\Release\MangaFetch.exe
 D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\obj\Release\MangaFetch.pdb
 D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\bin\Release\MangaFetch.exe
 D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\bin\Release\MangaFetch.pdb
+D:\capture\thinwugithub\manga\MangaFetch\MangaFetch\obj\Release\MangaFetch.csprojResolveAssemblyReference.cache
