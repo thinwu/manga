@@ -15,13 +15,13 @@ namespace MangaFetch
     {
         static void Main(string[] args)
         {
-
             WebRequest.DefaultWebProxy = null;
             string URL = null;
+            Dictionary<string, object> savedata = null;
             if (args.Length == 1 && args[0].Contains(".dat"))
             {
-                Dictionary<string, object> StartFrom = (Dictionary < string, object> )Utilities.ReadProcess(args[0]);
-                URL = StartFrom["URL"].ToString();
+                savedata = (Dictionary < string, object> )Utilities.ReadProcess(args[0]);
+                URL = savedata["URL"].ToString();
             }
             if (URL == null)
             {
@@ -30,11 +30,11 @@ namespace MangaFetch
             }
             if (URL.ToString().Contains("177mh.net"))
             {
-                MangaSpiders.XXMHV2(URL);
+                MangaSpiders.XXMHV2(URL, savedata);
             }
             else if (URL.ToString().Contains("kukukkk.com"))
             {
-                MangaSpiders.KUKUKKK(URL);
+                MangaSpiders.KUKUKKK(URL, savedata);
             }
         }
     }
