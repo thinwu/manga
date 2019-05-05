@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-using System.Windows.Forms;
-using System.IO;
 using System.Collections.Generic;
 
 namespace MangaFetch
@@ -17,7 +10,7 @@ namespace MangaFetch
         {
             WebRequest.DefaultWebProxy = null;
             string URL = null;
-            Dictionary<string, object> savedata = null;
+            Dictionary<string, object> savedata = new Dictionary<string, object>();
             if (args.Length == 1 && args[0].Contains(".dat"))
             {
                 savedata = (Dictionary < string, object> )Utilities.ReadProcess(args[0]);
@@ -25,8 +18,41 @@ namespace MangaFetch
             }
             if (URL == null)
             {
-                Console.WriteLine("The starter Volumn on www.177mh.net or comic.kukukkk.com");
-                URL = Console.ReadLine(); // "https://www.177mh.net/201301/239684.html";//"https://www.177mh.net/201902/409391.html";
+                Console.WriteLine("The starter Volumn on www.177mh.net or comic.kukukkk.com，or .dat file path");
+                string path = Console.ReadLine();
+                if (path.Contains(".dat"))
+                {
+                    savedata = (Dictionary<string, object>)Utilities.ReadProcess(path);
+                    URL = savedata["URL"].ToString();
+                }else
+                {
+                    URL = path;
+                }
+                
+
+            }
+            Console.WriteLine(String.Format("Processing The Volumns on {0}", URL));
+            Console.WriteLine("Set a Start volumn within the next 5 seconds.");
+            if (!savedata.ContainsKey("StartPage"))
+            {
+                savedata["StartPage"] = 1;
+                Console.WriteLine("By default is the value in savedata or 1 if it doesn't exist.");
+            }
+            else
+            {
+                Console.WriteLine(String.Format("By default is using the value {0} in savedata", savedata["StartPage"]));
+            }
+            string startPage;
+            bool success = Reader.TryReadLine(out startPage, 5000);
+            if (!success)
+            {
+                Console.WriteLine("Waited too long, using the default value to proceed...");
+            }else
+            {
+                if (!startPage.Equals(String.Empty))
+                {
+                    savedata["StartPage"] = int.Parse(startPage);
+                }
             }
             if (URL.ToString().Contains("177mh.net"))
             {
