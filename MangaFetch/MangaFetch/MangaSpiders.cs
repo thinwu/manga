@@ -1,5 +1,4 @@
-﻿#define DEBUG
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -174,16 +173,19 @@ namespace MangaFetch
             Uri uri = new Uri(URL);
             return Utilities.GetProperFolderName(uri.AbsolutePath);
         }
-        public static WebClient GetWebClient()
+        public static WebClient WebClient
         {
-            if (webClient == null)
+            get
             {
-                webClient = new WebClient();
-                webClient.Proxy = null;
-                webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko");
-                webClient.Headers.Add("X-UA-Compatible", "IE=11");
+                if (webClient == null)
+                {
+                    webClient = new WebClient();
+                    webClient.Proxy = null;
+                    webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko");
+                    webClient.Headers.Add("X-UA-Compatible", "IE=11");
+                }
+                return webClient;
             }
-            return webClient;
         }
         public static string GetSaveDataFullPath(string workingDir, string MangaName, string URL)
         {
@@ -209,7 +211,7 @@ namespace MangaFetch
         public static void WebClientDownloadFile(string src, string fileFullPath)
         {
             string tempName = $"{fileFullPath}.temp";
-            GetWebClient().DownloadFile(src, tempName);
+            WebClient.DownloadFile(src, tempName);
             if (File.Exists(fileFullPath))
             {
                 File.Delete(fileFullPath);
@@ -219,7 +221,12 @@ namespace MangaFetch
     }
     abstract class MangaSpiders
     {
-        static bool Visable = false;
+#if DEBUG
+        public static bool Visable = true;
+#else
+        public static bool Visable = false;
+#endif
+
         static string WorkingDir = Directory.GetCurrentDirectory();
         private static void XXMHSubVolumn(dynamic IE, string URL, string subFolder, ref float vol)
         {
@@ -229,9 +236,25 @@ namespace MangaFetch
             Utilities.IENavigate2(IE, URL);
             string mangaFolder = Path.Combine(WorkingDir, subFolder);
             int serverIndex = 0;
-            IE.Document.getElementById(tabServer[serverIndex]).click();
-            Utilities.WaitForReady(IE);
-            int totalPages = IE.Document.getElementsByClassName("selectTT")[0].getElementsByTagName("option").Length;
+            int totalPages = 0;
+            foreach (string s in tabServer)
+            {
+                try
+                {
+                    IE.Document.getElementById(s).click();
+                    Utilities.WaitForReady(IE);
+                    totalPages = IE.Document.getElementsByClassName("selectTT")[0].getElementsByTagName("option").Length;
+                    break;
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+            using (StreamWriter w = File.AppendText(logFile))
+            {
+                Utilities.Log($"{subFolder} has {totalPages} pages", w);
+            }
             string currentTitle = IE.Document.IHTMLDocument2_nameProp;
             string src = "";
             string result = "";
@@ -335,7 +358,7 @@ namespace MangaFetch
                 savedata["StartPage"] = StartPage + i + 1;
                 Utilities.SaveProcess(savedata, savedataName);
             }
-            Utilities.GetWebClient().Dispose();
+            Utilities.WebClient.Dispose();
             IE.Quit();
             Utilities.CloseIE(subFolder);
         }
@@ -376,7 +399,7 @@ namespace MangaFetch
                 savedata["StartPage"] = StartPage + i + 1 ;
                 Utilities.SaveProcess(savedata, savedataName);
             }
-            Utilities.GetWebClient().Dispose();
+            Utilities.WebClient.Dispose();
             IE.Quit();
             Utilities.CloseIE(subFolder);
         }
