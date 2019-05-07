@@ -1,4 +1,5 @@
 # manga
+- [GetBuild](https://github.com/thinwu/manga/releases)
 ### Launch exe
 ![launch](https://github.com/thinwu/documents/blob/master/manga/screenshots/1.PNG)
 ### Input URL
