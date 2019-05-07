@@ -25,6 +25,7 @@ namespace MangaFetch
                 }else
                 {
                     URL = path;
+                    savedata["URL"] = URL;
                 }
                 
 
