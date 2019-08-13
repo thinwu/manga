@@ -232,7 +232,7 @@ namespace MangaFetch
         {
             string logFile = Path.Combine(WorkingDir, String.Format("MangaSpider.{0}.log", subFolder));
             string[] tabServer = { "tab_srv1", "tab_srv2", "tab_srv3", "tab_srv4", "tab_srv5" };
-
+            Console.Title = subFolder;
             Utilities.IENavigate2(IE, URL);
             string mangaFolder = Path.Combine(WorkingDir, subFolder);
             int serverIndex = 0;
@@ -406,6 +406,7 @@ namespace MangaFetch
         private static void KUKUSubVolumn(dynamic IE, string URL, string subFolder, ref float vol, List<String> Hosts)
         {
             string mangaFolder = Path.Combine(WorkingDir, subFolder);
+            Console.Title = subFolder;
             string logFile = Path.Combine(WorkingDir, $"MangaSpider.{subFolder}.log");
             Utilities.IENavigate2(IE, URL);
             string currentTitle = IE.Document.IHTMLDocument2_nameProp;
