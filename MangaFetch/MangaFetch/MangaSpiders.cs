@@ -58,7 +58,6 @@ namespace MangaFetch
             string[] tabServer = { "tab_srv1", "tab_srv2", "tab_srv3", "tab_srv4", "tab_srv5" };
             Console.Title = subFolder;
             Utilities.IENavigate2(IE, URL);
-            var a = IE.Document.IHTMLDocument3_documentElement.outerHTML; // to active all the lazyupdate stuff
             string mangaFolder = Path.Combine(WorkingDir, subFolder);
             int serverIndex = 0;
             int totalPages = 0;
@@ -67,8 +66,16 @@ namespace MangaFetch
                 try
                 {
                     IE.Document.getElementById(s).click();
+                    if (Visable)
+                    {
+                        Console.Out.WriteLine(s);
+                    }
                     Utilities.WaitForReady(IE);
                     totalPages = IE.Document.getElementsByClassName("selectTT")[0].getElementsByTagName("option").Length;
+                    if (Visable)
+                    {
+                        Console.Out.WriteLine(totalPages);
+                    }
                     break;
                 }
                 catch

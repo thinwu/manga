@@ -89,6 +89,9 @@ namespace MangaFetch
             {
                 IEWait();
             }
+            foreach (var a in IE.Document.IHTMLDocument2_all) {
+                //to prevent lazy load
+            }
         }
         public static void IEWait(int generalSleep = 200)
         {
