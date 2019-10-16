@@ -83,11 +83,12 @@ namespace MangaFetch
                     continue;
                 }
             }
+            
+            string currentTitle = IE.Document.IHTMLDocument2_nameProp;
             using (StreamWriter w = File.AppendText(logFile))
             {
-                Utilities.Log($"{subFolder} has {totalPages} pages", w);
+                Utilities.Log($"{currentTitle} has {totalPages} pages", w);
             }
-            string currentTitle = IE.Document.IHTMLDocument2_nameProp;
             string src = "";
             string result = "";
             Utilities.CalVolResult(currentTitle, ref vol, ref result);
