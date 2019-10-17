@@ -55,7 +55,7 @@ namespace MangaFetch
                 }
             }
             Utilities.Log("Starting MangaSpider...");
-            if (URL.ToString().Contains("177mh.net"))
+            if (URL.ToString().Contains("177mh.net") || URL.ToString().Contains("77mh.cc"))
             {
                 MangaSpiders.XXMHV2(URL, savedata);
             }
