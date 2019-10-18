@@ -16,7 +16,7 @@ namespace MangaFetch
             }
             if (URL == null)
             {
-                Utilities.Log("The starter Volumn on www.177mh.net or comic.kukukkk.com，or .dat file path");
+                Utilities.Log("The starter Volumn on www.177mh.net, 77mh.cc or comic.kukukkk.com，or .dat file path");
                 string path = Console.ReadLine();
                 if (path.Contains(".dat"))
                 {
