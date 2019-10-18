@@ -1,5 +1,5 @@
 
 **.log
-**/.vs
-**/**/bin
-**/**/obj
+/MangaFetch/.vs/**
+/MangaFetch/**/bin/**
+/MangaFetch/**/obj/**
