@@ -87,7 +87,7 @@ namespace MangaFetch
             string currentTitle = IE.Document.IHTMLDocument2_nameProp;
             using (StreamWriter w = File.AppendText(logFile))
             {
-                Utilities.Log($"{currentTitle} has {totalPages} pages", w);
+                Utilities.Log($"{currentTitle} has {totalPages} pages, {URL}", w);
             }
             string src = "";
             string result = "";
@@ -141,7 +141,7 @@ namespace MangaFetch
                         }
                         else
                         {
-                            logLine = $"skipped: {src} as {fileName}";
+                            logLine = $"{currentTitle}skipped: {src} as {fileName}, address {URL}";
                             using (StreamWriter w = File.AppendText(logFile + ".skppedList"))
                             {
                                 Utilities.Log(logLine, w);
