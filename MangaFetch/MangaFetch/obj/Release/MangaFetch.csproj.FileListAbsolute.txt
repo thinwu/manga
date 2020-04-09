@@ -1,7 +1,0 @@
-c:\users\binwu\documents\visual studio 2015\MangaFetch\MangaFetch\bin\Release\MangaFetch.exe.config
-c:\users\binwu\documents\visual studio 2015\MangaFetch\MangaFetch\obj\Release\Interop.SHDocVw.dll
-c:\users\binwu\documents\visual studio 2015\MangaFetch\MangaFetch\obj\Release\MangaFetch.csproj.ResolveComReference.cache
-c:\users\binwu\documents\visual studio 2015\MangaFetch\MangaFetch\bin\Release\MangaFetch.exe
-c:\users\binwu\documents\visual studio 2015\MangaFetch\MangaFetch\bin\Release\MangaFetch.pdb
-c:\users\binwu\documents\visual studio 2015\MangaFetch\MangaFetch\obj\Release\MangaFetch.exe
-c:\users\binwu\documents\visual studio 2015\MangaFetch\MangaFetch\obj\Release\MangaFetch.pdb
