@@ -3,50 +3,24 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace MangaFetch
+namespace Slave
 {
-    abstract class Utilities
+    public abstract class Web
     {
         /*
         [DllImport("user32.dll")]
         public static extern int SetForegroundWindow(IntPtr hWnd);
         */
         private static WebClient webClient = null;
-        public static void SaveProcess(object StartFrom, string savedataFullName)
+        public static dynamic IEObj
         {
-            using (Stream ms = File.OpenWrite(savedataFullName))
+            get
             {
-                BinaryFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(ms, StartFrom);
+                return new SHDocVw.InternetExplorer();
             }
-        }
-        public static object ReadProcess(string savedataFullName)
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            object obj = null;
-            if (File.Exists(savedataFullName))
-            {
-                using (FileStream fs = File.Open(savedataFullName, FileMode.Open))
-                {
-                    obj = formatter.Deserialize(fs);
-                }
-            }
-            return obj;
-
-        }
-        public static void Log(string logMessage, TextWriter w=null)
-        {
-            if(w != null)
-            {
-                w.WriteLine($"{DateTime.Now.ToLongTimeString()} {DateTime.Now.ToLongDateString()}");
-                w.WriteLine($"  :{logMessage}");
-                w.WriteLine("-------------------------------");
-            }
-            Console.Out.WriteLine(logMessage);
         }
         public static void CloseIE(string titleLike)
         {
@@ -86,7 +60,8 @@ namespace MangaFetch
             {
                 IEWait();
             }
-            foreach (var a in IE.Document.IHTMLDocument2_all) {
+            foreach (var a in IE.Document.IHTMLDocument2_all)
+            {
                 //to prevent lazy load
             }
         }
@@ -143,7 +118,7 @@ namespace MangaFetch
         public static string TrimURL(string URL)
         {
             Uri uri = new Uri(URL);
-            return Utilities.GetProperFolderName(uri.AbsolutePath);
+            return Web.GetProperFolderName(uri.AbsolutePath);
         }
         public static WebClient WebClient
         {
@@ -159,7 +134,7 @@ namespace MangaFetch
         }
         public static string GetSaveDataFullPath(string workingDir, string MangaName, string URL)
         {
-            return Path.Combine(workingDir, String.Format("{1}.MangaSpider.{0}.dat", MangaName, Utilities.TrimURL(URL)));
+            return Path.Combine(workingDir, String.Format("{1}.MangaSpider.{0}.dat", MangaName, Web.TrimURL(URL)));
         }
         public static Dictionary<string, object> GetNewSaveData(Dictionary<string, object> memData, Dictionary<string, object> diskData)
         {
@@ -170,13 +145,13 @@ namespace MangaFetch
                     memData["StartPage"] = diskData["StartPage"];
                 }
             }
-            
+
             return memData;
         }
         public static void IENavigate2(dynamic IE, string URL)
         {
             IE.Navigate2(URL);
-            Utilities.WaitForReady(IE);
+            Web.WaitForReady(IE);
         }
         public static void WebClientDownloadFile(string src, string fileFullPath)
         {

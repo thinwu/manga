@@ -1,0 +1,7 @@
+E:\capture\thinwugithub\manga\Slave\bin\Debug\Slave.dll
+E:\capture\thinwugithub\manga\Slave\bin\Debug\Slave.pdb
+E:\capture\thinwugithub\manga\Slave\obj\Debug\Interop.SHDocVw.dll
+E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.csproj.ResolveComReference.cache
+E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.csproj.CoreCompileInputs.cache
+E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.dll
+E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.pdb
