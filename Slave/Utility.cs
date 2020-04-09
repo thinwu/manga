@@ -1,11 +1,35 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics;
+using System.Configuration;
 
 namespace Slave
 {
     public abstract class Utility
     {
+        public static dynamic _settings = null;
+        public static dynamic Configs
+        {
+            get
+            {
+                try
+                {
+                    if(_settings == null)
+                    {
+                        _settings = ConfigurationManager.AppSettings;
+                        return _settings;
+                    }
+                    return _settings;
+                    
+                }
+                catch (Exception e)
+                {
+                    Console.Out.Write("An error occurred while reading the configuration file.", e);
+                }
+                return null;
+            }
+        }
         public static void SaveProcess(object StartFrom, string savedataFullName)
         {
             using (Stream ms = File.OpenWrite(savedataFullName))
@@ -13,6 +37,18 @@ namespace Slave
                 BinaryFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(ms, StartFrom);
             }
+        }
+        public static void Log(string log, bool trace = false)
+        {
+            if (trace)
+            {
+                Trace.WriteLine(log);
+            }
+            else
+            {
+                Console.Out.WriteLine(log);
+            }
+            
         }
         public static object ReadProcess(string savedataFullName)
         {
@@ -28,7 +64,7 @@ namespace Slave
             return obj;
 
         }
-        public static void Log(string logMessage, TextWriter w = null)
+        public static void Log(string logMessage, TextWriter w = null, bool trace = false )
         {
             if (w != null)
             {
@@ -36,7 +72,7 @@ namespace Slave
                 w.WriteLine($"  :{logMessage}");
                 w.WriteLine("-------------------------------");
             }
-            Console.Out.WriteLine(logMessage);
+            Log(logMessage, trace);
         }
     }
 }
