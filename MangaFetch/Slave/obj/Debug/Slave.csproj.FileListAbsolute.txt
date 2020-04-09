@@ -1,0 +1,8 @@
+E:\capture\thinwugithub\manga\MangaFetch\Slave\bin\Debug\Utilities.dll
+E:\capture\thinwugithub\manga\MangaFetch\Slave\bin\Debug\Utilities.pdb
+E:\capture\thinwugithub\manga\MangaFetch\Slave\bin\Debug\Interop.SHDocVw.dll
+E:\capture\thinwugithub\manga\MangaFetch\Slave\obj\Debug\Interop.SHDocVw.dll
+E:\capture\thinwugithub\manga\MangaFetch\Slave\obj\Debug\Slave.csproj.ResolveComReference.cache
+E:\capture\thinwugithub\manga\MangaFetch\Slave\obj\Debug\Slave.csproj.CoreCompileInputs.cache
+E:\capture\thinwugithub\manga\MangaFetch\Slave\obj\Debug\Utilities.dll
+E:\capture\thinwugithub\manga\MangaFetch\Slave\obj\Debug\Utilities.pdb
