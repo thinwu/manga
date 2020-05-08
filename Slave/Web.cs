@@ -15,11 +15,22 @@ namespace Slave
         public static extern int SetForegroundWindow(IntPtr hWnd);
         */
         private static WebClient webClient = null;
-        public static dynamic IEObj
+        private static dynamic _ie = null;
+#if DEBUG
+        public static bool Visible = true;
+#else
+        public static bool Visible = false;
+#endif
+        public static dynamic IE
         {
             get
             {
-                return new SHDocVw.InternetExplorer();
+                if(_ie == null)
+                {
+                    _ie = new SHDocVw.InternetExplorerClass();
+                    _ie.Visible = Visible;
+                }
+                return _ie;
             }
         }
         public static void CloseIE(string titleLike)
@@ -54,9 +65,9 @@ namespace Slave
 
             }
         }*/
-        public static void WaitForReady(dynamic IE, int generalSleep = 200)
+        public static void WaitForReady(int generalSleep = 200)
         {
-            while (IE.ReadyState != Convert.ToInt16(SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE))
+            while (Convert.ToInt16(IE.ReadyState) != Convert.ToInt16(SHDocVw.tagREADYSTATE.READYSTATE_COMPLETE))
             {
                 IEWait();
             }
@@ -148,10 +159,11 @@ namespace Slave
 
             return memData;
         }
-        public static void IENavigate2(dynamic IE, string URL)
+        public static void IENavigate2(object URL)
         {
-            IE.Navigate2(URL);
-            Web.WaitForReady(IE);
+            object nullObj = String.Empty;
+            Web.IE.Navigate2(ref URL, ref nullObj, ref nullObj, ref nullObj, ref nullObj);
+            Web.WaitForReady();
         }
         public static void WebClientDownloadFile(string src, string fileFullPath)
         {

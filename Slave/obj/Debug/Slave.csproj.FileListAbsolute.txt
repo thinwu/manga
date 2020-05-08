@@ -5,4 +5,4 @@ E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.csproj.ResolveComReference.c
 E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.csproj.CoreCompileInputs.cache
 E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.dll
 E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.pdb
-E:\capture\thinwugithub\manga\Slave\obj\Debug\Slave.csprojAssemblyReference.cache
+E:\capture\thinwugithub\manga\Slave\bin\Debug\Interop.SHDocVw.dll

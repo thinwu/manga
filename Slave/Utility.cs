@@ -38,7 +38,7 @@ namespace Slave
                 formatter.Serialize(ms, StartFrom);
             }
         }
-        public static void Log(string log, bool trace = false)
+        public static void ConsoleOut(string log, bool trace = false)
         {
             if (trace)
             {
@@ -64,7 +64,7 @@ namespace Slave
             return obj;
 
         }
-        public static void Log(string logMessage, TextWriter w = null, bool trace = false )
+        public static void Log(string logMessage, TextWriter w = null )
         {
             if (w != null)
             {
@@ -72,7 +72,7 @@ namespace Slave
                 w.WriteLine($"  :{logMessage}");
                 w.WriteLine("-------------------------------");
             }
-            Log(logMessage, trace);
+            ConsoleOut(logMessage);
         }
     }
 }
