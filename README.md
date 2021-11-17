@@ -12,4 +12,4 @@
 ![Run with Save data 1](https://github.com/thinwu/documents/blob/master/manga/screenshots/1-1.PNG)
 - Style 2
 ![Run with Save data 2](https://github.com/thinwu/documents/blob/master/manga/screenshots/1-2.PNG)
-sss
+ss
